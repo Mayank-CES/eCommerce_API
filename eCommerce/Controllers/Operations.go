@@ -3,10 +3,12 @@ package Controllers
 import (
 	"eCommerce/Models"
 	"eCommerce/Services"
+	"eCommerce/mutex"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"net/http"
+	"time"
 )
 
 type Controller struct {
@@ -34,15 +36,16 @@ func (cnt *Controller) CreateCustomerAccount(c *gin.Context) {
 //BuyProduct ... Buy the product
 func (cnt *Controller) BuyProduct(c *gin.Context) {
 	var product Models.Product
-	var order Models.Order
-	id := c.Params.ByName("id")
-	err := cnt.service.GetProductByID(&product, id)
-	if err != nil {
-		//c.JSON(http.StatusNotFound, product)
-		fmt.Println("An Error occurred while fetching the product")
+	var transaction Models.Transaction
+	c.BindJSON(&transaction)
+
+	if isAvailable := mutex.Mutex.Lock("product_id" + transaction.ProdId); isAvailable == true {
+		c.JSON(http.StatusPreconditionFailed, gin.H{"Error": " Product is being updated. Wait for 2 secs"})
+		time.Sleep(2 * time.Second)
+		return
 	}
-	c.BindJSON(&order)
-	err = cnt.service.BuyProduct(&product,&order)
+	defer mutex.Mutex.UnLock("product_id" + transaction.ProdId)
+	err := cnt.service.BuyProduct(&product,&transaction)
 	//t :=Models.Transaction{}
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
@@ -56,12 +59,33 @@ func (cnt *Controller) BuyProduct(c *gin.Context) {
 			c.JSON(http.StatusOK,t)
 		}
 
-	 */
+	*/
 	}
-
-
 }
 
+//BuyMultipleProduct ... Buy the product
+func (cnt *Controller) BuyMultipleProduct(c *gin.Context) {
+	var product Models.Product
+	var transactions []Models.Transaction
+	c.BindJSON(&transactions)
+	for i := 0; i < len(transactions); i++ {
+		err := cnt.service.BuyProduct(&product, &transactions[i])
+		if err != nil {
+			c.AbortWithStatus(http.StatusNotFound)
+		} else {
+			fmt.Println("Order was Placed")
+			/*
+				err = cnt.service.AddTransaction(&t,&order.ProductId,&order.Quantity)
+				if err != nil {
+					c.AbortWithStatus(http.StatusNotFound)
+				} else {
+					c.JSON(http.StatusOK,t)
+				}
+
+			*/
+		}
+	}
+}
 
 // CheckOrderByID ... Get the product by id
 func (cnt *Controller) CheckOrderByID(c *gin.Context) {
@@ -158,6 +182,8 @@ func (cnt *Controller) GetRHistoryByID(c *gin.Context) {
 		c.JSON(http.StatusOK, order)
 	}
 }
+
+
 
 // //UpdateInfo ... Update the user information
 // func (cnt

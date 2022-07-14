@@ -24,7 +24,8 @@ func SetupRouter() *gin.Engine {
 		{
 			customerRoutes.POST("/add", ctrl.CreateCustomerAccount)
 			customerRoutes.GET("/order/:t_id", ctrl.CheckOrderByID)
-			customerRoutes.PATCH("/:id", ctrl.BuyProduct)
+			customerRoutes.PATCH("/", ctrl.BuyProduct)
+			customerRoutes.PATCH("/multiple", ctrl.BuyMultipleProduct)
 
 		}
 		retailerRoutes := gp.Group("/retailer")

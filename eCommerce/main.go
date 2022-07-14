@@ -21,7 +21,6 @@ func main() {
 		err := DB.Close()
 		if err != nil {
 			panic(err)
-			fmt.Println("Error occurred while closing database")
 		}
 	}(Config.DB)
 

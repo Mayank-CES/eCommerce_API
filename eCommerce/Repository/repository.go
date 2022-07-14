@@ -3,17 +3,20 @@ package Repository
 import (
 	"eCommerce/Config"
 	"eCommerce/Models"
+	"fmt"
 )
 
 type Repo interface {
 	CreateCustomerAccount(customer *Models.Customer)	(err error)
-	AddTransaction(order *Models.Order)	(err error)
-	BuyProduct(product *Models.Product, order *Models.Order)	(err error)
+	AddTransaction(transaction *Models.Transaction)	(err error)
+	BuyProduct(product *Models.Product, transaction *Models.Transaction)	(err error)
+	BuyProduct2(transaction *Models.Transaction)	(err error)
 	CheckOrderByID(transaction *Models.Transaction, id string) 	(err error)
 
 
 	GetAllProducts(products *[]Models.Product) (err error)
 	GetProductByID(product *Models.Product, id string) (err error)
+
 
 	CreateRetailerAccount(retailer *Models.Retailer)	(err error)
 	AddProduct(product *Models.Product)	(err error)
@@ -23,10 +26,6 @@ type Repo interface {
 }
 
 type repository struct{}
-
-func (r *repository) CreateRetailerAccount(retailer *Models.Retailer) (err error) {
-	panic("implement me")
-}
 
 func NewRepo() Repo {
 	return &repository{}
@@ -43,23 +42,48 @@ func (r *repository)  CreateCustomerAccount(customer *Models.Customer)	(err erro
 }
 
 // AddTransaction ... Fetch only one product by Id
-func (r *repository) AddTransaction(order *Models.Order)	( err error) {
-	if err = Config.DB.Create(&order)/*Models.Transaction{ProductId: order.ProductId,Quantity: order.Quantity,Status: "order placed"})*/.Error; err != nil {
+func (r *repository) AddTransaction(transaction *Models.Transaction)	( err error) {
+	if err = Config.DB.Create(&transaction)/*Models.Transaction{ProductId: order.ProductId,Quantity: order.Quantity,Status: "order placed"})*/.Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 //BuyProduct ... Fetch only one product by Id
-func (r *repository) BuyProduct(product *Models.Product,order *Models.Order) (err error) {
-	//var prod *Models.Product
-	//Config.DB.Model(&Models.Product{}).Where("product_id = ?", order.ProductId).Find(&prod)
-	var quantity= order.Quantity
-	if err = Config.DB.Model(&Models.Product{}).Where("product_id = ?", order.ProductId).Updates(map[string]interface{}{"Quantity":product.Quantity-quantity}).Error; err != nil {
+func (r *repository) BuyProduct(product *Models.Product,transaction *Models.Transaction) (err error) {
+	var id string
+	id = transaction.ProdId
+	if err = Config.DB.Where("product_id = ?", id).First(&product).Error; err != nil {
+		fmt.Printf("Error in finding the product %v", err)
 		return err
-
-	}
+	}else{
+		//fmt.Println("Order Placed")
+		newVal :=product.Quantity-transaction.TransactionQuantity
+		//fmt.Printf("NewVal : %d", newVal)
+		if newVal>0{
+			//fmt.Println("NewVal>0")
+			if err = Config.DB.Model(&Models.Product{}).Where("product_id = ?", id).Updates(map[string]interface{}{"Quantity":newVal}).Error; err != nil {
+				return err
+			}
+		}else{
+			fmt.Printf("Order Value is greater than the available stock. Please check the quantity.")
+		}
 	return nil
+	}
+}
+
+//BuyProduct2 ... Fetch only one product by Id
+func (r *repository) BuyProduct2(transaction *Models.Transaction) (err error) {
+	var product Models.Product
+	var id string
+	id = transaction.ProdId
+	if err = Config.DB.Where("product_id = ?", id).Find(product).Error; err != nil {
+		fmt.Println("Error in finding the product")
+		return err
+	} else {
+		fmt.Println("Order Placed")
+		return nil
+	}
 }
 
 //CheckOrderByID ... Fetch only one Order by Id
@@ -87,9 +111,9 @@ func (r *repository) GetProductByID(product *Models.Product, id string) (err err
 	return nil
 }
 
-// CreatRetailerAccount  ... Insert New Retailer data
-func (r *repository)  CreatRetailerAccount(retailer *Models.Retailer)	(err error){
-	if err = Config.DB.Create(retailer).Error; err != nil {
+// CreateRetailerAccount  ... Insert New Retailer data
+func (r *repository)  CreateRetailerAccount(retailer *Models.Retailer)	(err error){
+	if err = Config.DB.Save(retailer).Error; err != nil {
 		return err
 	}
 	return nil
@@ -105,7 +129,7 @@ func (r *repository)  AddProduct(product *Models.Product)	(err error){
 
 // PatchProduct ... Insert New Retailer data
 func (r *repository)  PatchProduct(updatedProduct *Models.PatchProd, id string)	(err error){
-	if err = Config.DB.Model(&Models.Product{}).Where("product_id = ?", id).Updates(map[string]interface{}{"Price":updatedProduct.Price,"Quantity":updatedProduct.Quantity}).Error; err != nil {
+	if err = Config.DB.Model(&Models.Product{}).Where("product_id = ?", id).Updates(map[string]interface{}{"Price":updatedProduct.Price,"Quantity":updatedProduct.PatchQuantity}).Error; err != nil {
 		return err
 	}
 	return nil

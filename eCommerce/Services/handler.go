@@ -9,9 +9,10 @@ type Services interface {
 	/*---Customer---*/
 
 	CreateCustomerAccount(customer *Models.Customer)	(err error)
-	BuyProduct(product *Models.Product, order *Models.Order)	(err error)
+	BuyProduct(product *Models.Product, transaction *Models.Transaction)	(err error)
 	CheckOrderByID(transaction *Models.Transaction, id string) ( err error)
-	AddTransaction(order *Models.Order) (err error)
+	BuyProduct2(order *Models.Transaction)	(err error)
+	AddTransaction(order *Models.Transaction) (err error)
 
 	/*---Product---*/
 	GetAllProducts(products *[]Models.Product)	(err error)
@@ -41,12 +42,16 @@ func (s *Server) CreateCustomerAccount(customer *Models.Customer)	(err error){
 }
 
 
-func (s *Server) BuyProduct(product *Models.Product, order *Models.Order)	(err error){
-	return s.Service.BuyProduct(product,order)
+func (s *Server) BuyProduct(product *Models.Product, transaction *Models.Transaction)	(err error){
+	return s.Service.BuyProduct(product,transaction)
 }
 
-func (s *Server) AddTransaction(order *Models.Order)	(err error){
-	return s.Service.AddTransaction(order)
+func (s *Server) BuyProduct2(transaction *Models.Transaction)	(err error){
+	return s.Service.BuyProduct2(transaction)
+}
+
+func (s *Server) AddTransaction(transaction *Models.Transaction)	(err error){
+	return s.Service.AddTransaction(transaction)
 }
 
 

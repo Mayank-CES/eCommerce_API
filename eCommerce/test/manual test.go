@@ -5,9 +5,9 @@ package test
 
 {"customer_id":"1", "customer_name":"Mayank", "customer_address":"Delhi"}
 
-02 ADD RETAILER				----- 	ERROR			************
+02 ADD RETAILER				----- 	CHECKED
 
-{"retailer_id":"1", "retailer_name":"Pulkit", "retailer_address":"Jaipur"}
+{"id":"1", "retailer_name":"Pulkit", "retailer_address":"Jaipur"}
 
 03 ADD PRODUCT				-----	CHECKED
 
@@ -26,10 +26,11 @@ package test
 07 BUY PRODUCT
 
 {"product_id":"1", "quantity":2}
+{"transaction_id":"1","prod_id":"1", "transaction_quantity":2}
 
 
-
-
+08 BUY MULTIPLE PRODUCTS
+{{"transaction_id":"4","prod_id":"1", "transaction_quantity":3},{"transaction_id":"5","prod_id":"2", "transaction_quantity":1}}
 
 
 

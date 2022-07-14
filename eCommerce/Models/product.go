@@ -9,7 +9,7 @@ type Product struct {
 
 type PatchProd struct {
 	Price			uint	`json:"price" binding:"required"`
-	Quantity		uint	`json:"quantity" binding:"required"`
+	PatchQuantity		uint	`json:"patch_quantity" binding:"required"`
 }
 
 
