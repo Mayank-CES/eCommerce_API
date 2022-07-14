@@ -78,7 +78,7 @@ Basic Authentication has been used for the api which is in the Config section. T
 
 	Input : {"price":16000, "quantity":20}
 	
-	![Patch Product with ID 1](06PatchProduct.png)
+![Patch Product with ID 1](06PatchProduct.png)
 
 
 
@@ -88,7 +88,7 @@ Basic Authentication has been used for the api which is in the Config section. T
 
 	Input : {"transaction_id":"1","prod_id":"1", "transaction_quantity":2}
 	
-	![Buy Product](07BuyProduct.png)
+![Buy Product](07BuyProduct.png)
 
 
 
@@ -99,7 +99,7 @@ Basic Authentication has been used for the api which is in the Config section. T
 
 	Input : [{“transaction_id":"4","prod_id":"1", "transaction_quantity":3},{"transaction_id":"5","prod_id":"2", “transaction_quantity":1}]
 	
-	![Buy Multiple Product](08BuyMultipleProduct.png)
+![Buy Multiple Product](08BuyMultipleProduct.png)
 
 
 
