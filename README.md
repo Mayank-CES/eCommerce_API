@@ -34,7 +34,7 @@ Basic Authentication has been used for the api which is in the Config section. T
 
 	Input : {“customer_id":"1", "customer_name":"Mayank", “customer_address”:"Delhi"}
 	
-	![Add Customer](01AddCutomer.png)
+	![Add Customer](01AddCustomer.png)
 
 
 2. ADD RETAILER
