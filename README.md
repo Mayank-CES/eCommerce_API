@@ -52,10 +52,11 @@ Basic Authentication has been used for the api which is in the Config section. T
 	Input 1 : {“product_id”:"1", "product_name":"Phone", "price":20000, “quantity":5}
 
 	![Add Product 1](03AddProduct_1.png)
+	
 
 	Input 2 : {“product_id”:"2", "product_name":"Speaker", "price":2000, “quantity”:10}
 
-	![Add Product 2](04AddProduct_2.png)
+	![Add Product 2](03AddProduct_2.png)
 
 
 4. GET ALL PRODUCTS
