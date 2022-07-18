@@ -1,4 +1,4 @@
-package test
+package Test
 /*
 
 01 ADD CUSTOMER				----- 	CHECKED

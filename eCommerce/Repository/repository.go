@@ -43,7 +43,7 @@ func (r *repository)  CreateCustomerAccount(customer *Models.Customer)	(err erro
 
 // AddTransaction ... Fetch only one product by Id
 func (r *repository) AddTransaction(transaction *Models.Transaction)	( err error) {
-	if err = Config.DB.Create(&transaction)/*Models.Transaction{ProductId: order.ProductId,Quantity: order.Quantity,Status: "order placed"})*/.Error; err != nil {
+	if err = Config.DB.Create(&transaction).Error; err != nil {
 		return err
 	}
 	return nil

@@ -23,12 +23,12 @@ func NewController(services Services.Services) *Controller {
 func (cnt *Controller) CreateCustomerAccount(c *gin.Context) {
 	var customer Models.Customer
 	c.BindJSON(&customer)
-	err := cnt.service.CreateCustomerAccount(&customer)
+	cOutput, err := cnt.service.CreateCustomerAccount(&customer)
 	if err != nil {
 		fmt.Println(err.Error())
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, customer)
+		c.JSON(http.StatusOK, cOutput)
 	}
 }
 
@@ -39,18 +39,27 @@ func (cnt *Controller) BuyProduct(c *gin.Context) {
 	var transaction Models.Transaction
 	c.BindJSON(&transaction)
 
+
 	if isAvailable := mutex.Mutex.Lock("product_id" + transaction.ProdId); isAvailable == true {
 		c.JSON(http.StatusPreconditionFailed, gin.H{"Error": " Product is being updated. Wait for 2 secs"})
 		time.Sleep(2 * time.Second)
 		return
 	}
 	defer mutex.Mutex.UnLock("product_id" + transaction.ProdId)
-	err := cnt.service.BuyProduct(&product,&transaction)
+	pOutput, tOutput, err := cnt.service.BuyProduct(&product,&transaction)
 	//t :=Models.Transaction{}
 	if err != nil {
-		c.AbortWithStatus(http.StatusNotFound)
+		c.AbortWithStatus(http.StatusBadRequest)
 	} else {
 		fmt.Println("Order was Placed")
+		c.JSON(http.StatusOK, pOutput)
+		tOutput, err = cnt.service.AddTransaction(&transaction)
+		if err != nil {
+			c.AbortWithStatus(http.StatusNotFound)
+		} else {
+			fmt.Println("Transaction was added to the table")
+			c.JSON(http.StatusOK,tOutput)
+		}
 	/*
 		err = cnt.service.AddTransaction(&t,&order.ProductId,&order.Quantity)
 		if err != nil {
@@ -69,20 +78,18 @@ func (cnt *Controller) BuyMultipleProduct(c *gin.Context) {
 	var transactions []Models.Transaction
 	c.BindJSON(&transactions)
 	for i := 0; i < len(transactions); i++ {
-		err := cnt.service.BuyProduct(&product, &transactions[i])
+		pOutput, tOutput, err := cnt.service.BuyProduct(&product, &transactions[i])
 		if err != nil {
 			c.AbortWithStatus(http.StatusNotFound)
 		} else {
-			fmt.Println("Order was Placed")
-			/*
-				err = cnt.service.AddTransaction(&t,&order.ProductId,&order.Quantity)
-				if err != nil {
-					c.AbortWithStatus(http.StatusNotFound)
-				} else {
-					c.JSON(http.StatusOK,t)
-				}
+			fmt.Println("Order was Placed",pOutput)
 
-			*/
+				//err = cnt.service.AddTransaction(&t,&order.ProductId,&order.Quantity)
+				//if err != nil {
+				//	c.AbortWithStatus(http.StatusNotFound)
+				//} else {
+					c.JSON(http.StatusOK, tOutput)
+				//}
 		}
 	}
 }
@@ -91,11 +98,11 @@ func (cnt *Controller) BuyMultipleProduct(c *gin.Context) {
 func (cnt *Controller) CheckOrderByID(c *gin.Context) {
 	id := c.Params.ByName("id")
 	var order Models.Transaction
-	err := cnt.service.CheckOrderByID(&order, id)
+	tOutput, _, err := cnt.service.CheckOrderByID(&order, id)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, order)
+		c.JSON(http.StatusOK, tOutput)
 	}
 }
 
@@ -104,11 +111,11 @@ func (cnt *Controller) CheckOrderByID(c *gin.Context) {
 // GetAllProducts  ... Get all Products
 func (cnt *Controller) GetAllProducts(c *gin.Context) {
 	var products []Models.Product
-	err := cnt.service.GetAllProducts(&products)
+	pOutput, err := cnt.service.GetAllProducts(&products)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, products)
+		c.JSON(http.StatusOK, pOutput)
 	}
 }
 
@@ -116,11 +123,11 @@ func (cnt *Controller) GetAllProducts(c *gin.Context) {
 func (cnt *Controller) GetProductByID(c *gin.Context) {
 	id := c.Params.ByName("id")
 	var product Models.Product
-	err := cnt.service.GetProductByID(&product, id)
+	pOutput,_, err := cnt.service.GetProductByID(&product, id)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, product)
+		c.JSON(http.StatusOK, pOutput)
 	}
 }
 
@@ -130,12 +137,12 @@ func (cnt *Controller) GetProductByID(c *gin.Context) {
 func (cnt *Controller) CreateRetailerAccount(c *gin.Context) {
 	var retailer Models.Retailer
 	c.BindJSON(&retailer)
-	err := cnt.service.CreateRetailerAccount(&retailer)
+	rOutput, err := cnt.service.CreateRetailerAccount(&retailer)
 	if err != nil {
 		fmt.Println(err.Error())
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, retailer)
+		c.JSON(http.StatusOK, rOutput)
 	}
 }
 
@@ -143,12 +150,12 @@ func (cnt *Controller) CreateRetailerAccount(c *gin.Context) {
 func (cnt *Controller) AddProduct(c *gin.Context) {
 	var product Models.Product
 	c.BindJSON(&product)
-	err := cnt.service.AddProduct(&product)
+	pOutput, err := cnt.service.AddProduct(&product)
 	if err != nil {
 		fmt.Println(err.Error())
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, product)
+		c.JSON(http.StatusOK, pOutput)
 	}
 }
 
@@ -156,18 +163,18 @@ func (cnt *Controller) AddProduct(c *gin.Context) {
 func (cnt *Controller) PatchProduct(c *gin.Context) {
 	var product Models.Product
 	id := c.Params.ByName("id")
-	err := cnt.service.GetProductByID(&product, id)
+	_, _, err := cnt.service.GetProductByID(&product, id)
 	if err != nil {
 		// c.JSON(http.StatusNotFound, product)
 		fmt.Println("An Error occurred while fetching the product")
 	}
 	var updatedProduct Models.PatchProd
 	c.BindJSON(&updatedProduct)
-	err = cnt.service.PatchProduct(&updatedProduct, id)
+	upOutput, _, err := cnt.service.PatchProduct(&updatedProduct, id)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, product)
+		c.JSON(http.StatusOK, upOutput)
 	}
 }
 
@@ -175,11 +182,11 @@ func (cnt *Controller) PatchProduct(c *gin.Context) {
 func (cnt *Controller) GetRHistoryByID(c *gin.Context) {
 	id := c.Params.ByName("id")
 	var order Models.Transaction
-	err := cnt.service.GetRHistoryByID(&order, id)
+	tOutput, _, err := cnt.service.GetRHistoryByID(&order, id)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, order)
+		c.JSON(http.StatusOK, tOutput)
 	}
 }
 
